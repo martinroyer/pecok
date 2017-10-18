@@ -17,12 +17,12 @@ expA = q*np.ones((n_samples, n_samples))
 expA[:n_samples//2,:n_samples//2] += p-q
 expA[n_samples//2:,n_samples//2:] += p-q
 A = np.vectorize(lambda p : np.random.binomial(1, p))(expA)
-A.flat[::n_samples+1] = 10
+A.flat[::n_samples+1] = 0
 i_lower = np.tril_indices(n_samples, -1)
 A[i_lower] = A.T[i_lower]
 print(A)
 
-Bhat = pecok_clustering.cluster(A, 2)
+Bhat = pecok_clustering.cluster_sbm(A, 2)
 kMeans = cluster.KMeans(n_clusters=2, init='k-means++', n_init=100, copy_x=True)
 print("truth:".ljust(10), truth)
 print("pecok:".ljust(10), kMeans.fit(Bhat).labels_)
