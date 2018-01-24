@@ -24,8 +24,8 @@ def proj_lin_Hrows(Y, K):
 
 def operator_lstarllstarinv_sym(u, v):
     """Operator \widetildetilde{L}^*_{sym} on (u,v) in R^{p+1} -> R^{p*p}"""
-    temp = operator_lstarllstarinv(u, v)
-    return (temp + temp.T)-np.diag(np.diag(temp))
+    temp = u.repeat(u.size).reshape((u.size, u.size))
+    return (temp + temp.T)/2 + np.diag(np.repeat(v, u.size))
 
 def proj_lin_Hsymmetric(Y, K):
     """Projection onto \Pi_{\mathcal{A}sym}(Y)"""
@@ -62,8 +62,7 @@ def proj_Snp_imp(Y):
     return Y
 
 # ### - Main method
-n_max = 3000
-def pecok_admm(relational_data, K, n_iter_max=n_max, rho=1.0):
+def pecok_admm(relational_data, K, n_iter_max=-1):
     """Implementation of Alternating Direction Method of Multipliers
 
     Parameters
@@ -71,10 +70,14 @@ def pecok_admm(relational_data, K, n_iter_max=n_max, rho=1.0):
     relational_data : symmetric matrix of relational data (e.g. gram matrix), shape=(n_samples, n_samples)
         Training instances to cluster."""
     n_samples,_ = relational_data.shape
+    if n_iter_max < 0:
+        n_iter_max = np.max((1000,2*n_samples))
+    rho = 10.0
     relational_data = relational_data / np.linalg.norm(relational_data)
 
-    X,Y,Z = np.identity(n_samples), np.identity(n_samples), np.identity(n_samples)
-    U,V,W = np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples))
+    X, Y, Z = np.identity(n_samples), np.identity(n_samples), np.identity(n_samples)
+    X = X + 0.2*np.random.random((n_samples, n_samples))
+    U, V, W = np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples))
     Xbar = (X + Y + Z)/3
 
     n_iter = 0
@@ -101,7 +104,7 @@ def pecok_admm(relational_data, K, n_iter_max=n_max, rho=1.0):
 
 
 # ### - Updates
-epsilon = 1e-8
+epsilon = 1e-4
 def is_primal_high(res_primal, X, Y, Z):
     return res_primal > epsilon * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
 
