@@ -7,25 +7,11 @@ import numpy as np
 from scipy import linalg as la
 
 
-###############################################################################
-def operator_lstarllstarinv(u, v):
-    """Operator \widetilde{L}^* on (u,v) in R^{p+1} -> R^{p*p}"""
-    return u.repeat(u.size).reshape((u.size, u.size)) + np.diag(np.repeat(v, u.size))
-
-def proj_lin_Hrows(Y, K):
-    """Projection onto \Pi_{\mathcal{A}}(Y)"""
-    n_samples,_ = Y.shape
-    x = np.sum(Y, 1) - 1
-    y = np.trace(Y) - K
-    invx = (x+(np.sum(x)-y*n_samples)/(n_samples**2-n_samples))/n_samples
-    invy = ((y-np.sum(x))/(n_samples-1)+y)/n_samples
-    Y = Y - operator_lstarllstarinv(invx, invy)
-    return Y
-
 def operator_lstarllstarinv_sym(u, v):
     """Operator \widetildetilde{L}^*_{sym} on (u,v) in R^{p+1} -> R^{p*p}"""
     temp = u.repeat(u.size).reshape((u.size, u.size))
     return (temp + temp.T)/2 + np.diag(np.repeat(v, u.size))
+
 
 def proj_lin_Hsymmetric(Y, K):
     """Projection onto \Pi_{\mathcal{A}sym}(Y)"""
@@ -37,13 +23,13 @@ def proj_lin_Hsymmetric(Y, K):
     Y = Y - operator_lstarllstarinv_sym(invx, invy)
     return Y
 
-# ### - Y-Projection
+
 def proj_positive(x, thresh=0):
     """Project onto component-positive matrix"""
     x[x < thresh] = 0
     return x
 
-# ### - Z-Projection
+
 def proj_Snp_imp(Y):
     """Improved projection onto semi-definite positive matrix"""
     n_samples,_ = Y.shape
@@ -61,7 +47,7 @@ def proj_Snp_imp(Y):
         Y = v.dot(np.diag(eig_vals)).dot(v.T)
     return Y
 
-# ### - Main method
+
 def pecok_admm(relational_data, K, n_iter_max=-1):
     """Implementation of Alternating Direction Method of Multipliers
 
@@ -103,10 +89,9 @@ def pecok_admm(relational_data, K, n_iter_max=-1):
     return Z
 
 
-# ### - Updates
-epsilon = 1e-4
 def is_primal_high(res_primal, X, Y, Z):
-    return res_primal > epsilon * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
+    return res_primal > 1e-4 * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
+
 
 def is_dual_high(res_dual, Y, Z):
-    return res_dual > epsilon * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
+    return res_dual > 1e-4 * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
