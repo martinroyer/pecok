@@ -8,6 +8,7 @@ setup(
     author='Martin Royer',
     author_email='martin.royer@math.u-psud.fr',
 	url="https://github.com/martinroyer/pecok",
+	license="MIT/X",
 	classifiers=[
 		  "Development Status :: 4 - Beta",
           "Intended Audience :: Science/Research",
