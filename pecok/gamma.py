@@ -40,8 +40,8 @@ def gamma_hat4(X):
 
     Wab = np.zeros((n_samples,n_samples**2))
     for c in range(n_samples):
-        Wab[:,c:c+n_samples] = XaXb[:,c]-XaXb
-    Wab = Wab / (np.linalg.norm(Wab, axis=1, keepdims=True)+1e-8)
+        Wab[:,c*n_samples:(c+1)*n_samples] = XaXb[:,c]-XaXb
+    Wab = Wab / (np.linalg.norm(Wab, axis=0, keepdims=True)+1e-8)
     Vab = np.zeros((n_samples,n_samples))
     for a, b in itertools.combinations(range(n_samples), 2):
         msk = [i + j * n_samples for i, j in itertools.combinations(
