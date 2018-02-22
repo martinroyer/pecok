@@ -48,7 +48,7 @@ def proj_Snp_imp(Y):
     return Y
 
 
-def pecok_admm(relational_data, K, n_iter_max=-1):
+def pecok_admm(relational_data, K, n_iter_max=-1, rho=1, mat_init=None):
     """Implementation of Alternating Direction Method of Multipliers
 
     Parameters
@@ -58,10 +58,11 @@ def pecok_admm(relational_data, K, n_iter_max=-1):
     n_samples,_ = relational_data.shape
     if n_iter_max < 0:
         n_iter_max = np.max((1000,2*n_samples))
-    rho = 10.0
     relational_data = relational_data / np.linalg.norm(relational_data)
 
     X, Y, Z = np.identity(n_samples), np.identity(n_samples), np.identity(n_samples)
+    if mat_init is not None:
+        X, Y, Z = mat_init, mat_init, mat_init
     X = X + 0.2*np.random.random((n_samples, n_samples))
     U, V, W = np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples))
     Xbar = (X + Y + Z)/3
@@ -90,8 +91,8 @@ def pecok_admm(relational_data, K, n_iter_max=-1):
 
 
 def is_primal_high(res_primal, X, Y, Z):
-    return res_primal > 1e-4 * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
+    return res_primal > 1e-3 * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
 
 
 def is_dual_high(res_dual, Y, Z):
-    return res_dual > 1e-4 * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
+    return res_dual > 1e-3 * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
