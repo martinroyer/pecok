@@ -13,11 +13,11 @@ def operator_lstarllstarinv_sym(u, v):
     return (temp + temp.T)/2 + np.diag(np.repeat(v, u.size))
 
 
-def proj_lin_Hsymmetric(Y, K):
+def proj_lin_Hsymmetric(Y, n_struct):
     """Projection onto \Pi_{\mathcal{A}sym}(Y)"""
     n_samples,_ = Y.shape
     x = np.sum(Y, 1) - 1
-    y = np.trace(Y) - K
+    y = np.trace(Y) - n_struct
     invx = (x-(np.sum(x)+y)/(2*n_samples))/(n_samples-1)
     invy = (y-(np.sum(x)+y)/(2*n_samples))/(n_samples-1)
     Y = Y - operator_lstarllstarinv_sym(invx, invy)
@@ -48,7 +48,7 @@ def proj_Snp_imp(Y):
     return Y
 
 
-def pecok_admm(relational_data, K, n_iter_max=-1, rho=1, mat_init=None):
+def pecok_admm(relational_data, n_struct, n_iter_max=-1, rho=5, mat_init=None, verbose=False, eps_residual=1e-4):
     """Implementation of Alternating Direction Method of Multipliers
 
     Parameters
@@ -63,7 +63,6 @@ def pecok_admm(relational_data, K, n_iter_max=-1, rho=1, mat_init=None):
     X, Y, Z = np.identity(n_samples), np.identity(n_samples), np.identity(n_samples)
     if mat_init is not None:
         X, Y, Z = mat_init, mat_init, mat_init
-    X = X + 0.2*np.random.random((n_samples, n_samples))
     U, V, W = np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples)), np.zeros((n_samples,n_samples))
     Xbar = (X + Y + Z)/3
 
@@ -72,7 +71,7 @@ def pecok_admm(relational_data, K, n_iter_max=-1, rho=1, mat_init=None):
         n_iter = n_iter + 1
 
         oldXbar = Xbar
-        X = proj_lin_Hsymmetric(Xbar - U + relational_data / rho, K)
+        X = proj_lin_Hsymmetric(Xbar - U + relational_data / rho, n_struct)
         Y = proj_positive(Xbar - V)
         Z = proj_Snp_imp(Xbar - W)
         Xbar = (X + Y + Z)/3
@@ -83,16 +82,17 @@ def pecok_admm(relational_data, K, n_iter_max=-1, rho=1, mat_init=None):
 
         res_dual = rho * np.linalg.norm(Xbar-oldXbar)
         res_primal = np.linalg.norm((X-Xbar, Z-Xbar, Y-Xbar))
-        if not (is_primal_high(res_primal, X, Y, Z) or is_dual_high(res_dual, Y, Z)):
+        if not (is_primal_high(eps_residual, res_primal, X, Y, Z) or is_dual_high(eps_residual, res_dual, Y, Z)):
             break
-    print("ADMM ends -- n_iter=%i, rho=%2.2f" % (n_iter, rho))
-    print("          -- res_primal=%.3e, res_dual=%.3e" % (res_primal, res_dual))
+    if verbose:
+        print("ADMM ends -- n_iter=%i, rho=%2.2f" % (n_iter, rho))
+        print("          -- res_primal=%.3e, res_dual=%.3e" % (res_primal, res_dual))
     return Z
 
 
-def is_primal_high(res_primal, X, Y, Z):
-    return res_primal > 1e-3 * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
+def is_primal_high(eps_residual, res_primal, X, Y, Z):
+    return res_primal > eps_residual * np.max((np.linalg.norm(X), np.linalg.norm(Y), np.linalg.norm(Z)))
 
 
-def is_dual_high(res_dual, Y, Z):
-    return res_dual > 1e-3 * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
+def is_dual_high(eps_residual, res_dual, Y, Z):
+    return res_dual > eps_residual * (np.sqrt(Y.shape[0]) + np.linalg.norm(Y) + np.linalg.norm(Z))
