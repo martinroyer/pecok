@@ -1,12 +1,16 @@
 from distutils.core import setup
+import setuptools
 
 setup(
     name = 'pecok',
     packages = ['pecok'],
+	install_requires=[
+          'numpy', 'scipy', 'scikit-learn'
+      ],
     version = '1.0.0',
     description = 'Implementation of Pecok',
     author='Martin Royer',
-    author_email='martin.royer@math.u-psud.fr',
+    author_email='martinpierreroyer@gmail.com',
 	url="https://github.com/martinroyer/pecok",
 	license="MIT/X",
 	classifiers=[
@@ -19,3 +23,4 @@ setup(
           "Topic :: Scientific/Engineering",
           ]
 )
+
