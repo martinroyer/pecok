@@ -20,17 +20,6 @@ You can find it on PyPI and install it with:
 pip install pecok
 ```
 
-You will also find a test file that * compile with:
-```shell
-(sudo) pip install .
-```
-
-The package can then be imported in a python shell with:
-```shell
-import sklearn_tda
-``` 
-
-
 
 ### Clustering algorithms
 
