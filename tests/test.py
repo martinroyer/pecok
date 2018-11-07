@@ -8,7 +8,7 @@ import timeit
 
 # import pyper
 import numpy as np
-from pecok import pecok_clustering, kmeanz_clustering
+from pecok import KMeanz, Pecok
 from sklearn.cluster import KMeans
 
 
@@ -42,9 +42,11 @@ print("seed is %i" % seed)
 
 methods = [
     [lambda X, K: KMeans(n_clusters=K, init='k-means++', n_init=100).fit(X).labels_, 'kmeans++'],
+    [lambda X, K: KMeanz(n_clusters=K, corr=2).fit(X).labels_, 'KMeanz'],
+    [lambda X, K: Pecok(n_clusters=K, corr=2).fit(X).labels_, 'Pecok'],
 #    [hdclassif, 'HDDC'],
-    [pecok_clustering, 'pecok'],
-    [kmeanz_clustering, 'kmeanz']
+#     [pecok_clustering, 'pecok'],
+#     [kmeanz_clustering, 'kmeanz']
 ]
 
 print("\nVAR CLUSTERING\n\n")
@@ -66,8 +68,8 @@ for method, method_name in methods:
 
 
 print("\nPOINT CLUSTERING\n\n")
-n_var = 100
 n_obs = 10
+n_var = 100
 
 truth = np.asmatrix(np.concatenate((np.repeat(0, n_obs//2), np.repeat(1, n_obs//2))))
 X = np.zeros((n_obs, n_var))

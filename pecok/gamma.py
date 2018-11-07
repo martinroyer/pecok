@@ -89,7 +89,7 @@ def cross_diag(X):
     return np.diag(X.dot(X.T))
 
 
-def gamma_hat(X, int_corr):
+def gamma_hat(X, corr):
     ghat = {
         0: no_correction,
         1: gamma_hat2_robust,
@@ -97,5 +97,5 @@ def gamma_hat(X, int_corr):
         3: gamma_hat3,
         4: gamma_hat4,
         8: cross_diag,
-    }.get(int_corr, no_correction)(X)
+    }.get(corr, no_correction)(X)
     return np.diag(ghat)

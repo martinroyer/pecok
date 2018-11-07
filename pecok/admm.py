@@ -48,7 +48,7 @@ def proj_Snp_imp(Y):
     return Y
 
 
-def pecok_admm(relational_data, n_struct, n_iter_max=-1, rho=5, mat_init=None, verbose=False, eps_residual=1e-4):
+def pecok_admm(relational_data, n_clusters, n_iter_max=-1, rho=5, mat_init=None, verbose=False, eps_residual=1e-4):
     """Implementation of Alternating Direction Method of Multipliers
 
     Parameters
@@ -71,7 +71,7 @@ def pecok_admm(relational_data, n_struct, n_iter_max=-1, rho=5, mat_init=None, v
         n_iter = n_iter + 1
 
         oldXbar = Xbar
-        X = proj_lin_Hsymmetric(Xbar - U + relational_data / rho, n_struct)
+        X = proj_lin_Hsymmetric(Xbar - U + relational_data / rho, n_clusters)
         Y = proj_positive(Xbar - V)
         Z = proj_Snp_imp(Xbar - W)
         Xbar = (X + Y + Z)/3
