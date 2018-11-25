@@ -8,14 +8,6 @@ import numpy as np
 
 
 
-def gamma_hat1(X):
-    gram_X = X.dot(X.T)
-    diag_mem = np.copy(np.diag(gram_X))
-    np.fill_diagonal(gram_X,-np.inf)
-    gamma = diag_mem - np.max(gram_X,1)
-    return gamma
-
-
 def gamma_hat2(X):
     n_samples,_ = X.shape
     X2 = X / (np.linalg.norm(X, axis=1, keepdims=True)+1e-8)
@@ -26,6 +18,19 @@ def gamma_hat2(X):
     for a in range(n_samples):
         b1 = neighbours[a]
         gamma[a] = (X[a,:]-X[b1,:]).dot(X[a,:])
+    return gamma
+
+
+def gamma_hat2_robust(X):
+    n_samples,_ = X.shape
+    X2 = X / (np.linalg.norm(X, axis=1, keepdims=True)+1e-8)
+    XaX2 = X.dot(X2.T)
+    np.fill_diagonal(XaX2,np.inf)
+    gamma = np.zeros(n_samples)
+    neighbours = [np.argpartition(XaX2[a,:], 2)[0:2] for a in range(n_samples)]
+    for a in range(n_samples):
+        b1,b2 = neighbours[a]
+        gamma[a] = (X[a,:]-X[b1,:]).dot(X[a,:]-X[b2,:])
     return gamma
 
 
@@ -80,12 +85,17 @@ def no_correction(X):
     return np.zeros(X.shape[0])
 
 
+def cross_diag(X):
+    return np.diag(X.dot(X.T))
+
+
 def gamma_hat(X, int_corr):
     ghat = {
         0: no_correction,
-        1: gamma_hat1,
+        1: gamma_hat2_robust,
         2: gamma_hat2,
         3: gamma_hat3,
         4: gamma_hat4,
+        8: cross_diag,
     }.get(int_corr, no_correction)(X)
     return np.diag(ghat)
