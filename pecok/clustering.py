@@ -14,9 +14,6 @@ from .gamma import gamma_hat
 from .admm import pecok_admm
 
 
-###############################################################################
-# shared correction
-
 def _corrected_relational(obs, corr):
     return (obs.dot(obs.T) - gamma_hat(obs, corr=corr)) / obs.shape[1]
 
@@ -59,30 +56,18 @@ class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
 
          Attributes
         ----------
-        corrected_points_: array, [n_points, n_features]
-            Points representation in Z-space
-        cluster_centers_ : array, [n_clusters, n_features]
-            Coordinates of cluster centers in Z-space
         labels_ :
             Labels of each point
-        inertia_ : float
-            Sum of squared distances (in Z-space) of samples to their closest cluster center.
 
         Examples
-            --------
-            TODO
-            >>> from sklearn.cluster import KMeans
-            >>> import numpy as np
-            >>> X = np.array([[1, 2], [1, 4], [1, 0],
-            ...               [4, 2], [4, 4], [4, 0]])
-            >>> kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-            >>> kmeans.labels_
-            array([0, 0, 0, 1, 1, 1], dtype=int32)
-            >>> kmeans.predict([[0, 0], [4, 4]])
-            array([0, 1], dtype=int32)
-            >>> kmeans.cluster_centers_
-            array([[1., 2.],
-                   [4., 2.]])
+        --------
+        >>> from pecok import Pecok
+        >>> import numpy as np
+        >>> X = np.array([[1, 2], [1, 4], [1, 0],
+        ...               [4, 2], [4, 4], [4, 0]])
+        >>> pecok = Pecok(n_clusters=2).fit(X)
+        >>> pecok.labels_
+        array([1, 1, 1, 0, 0, 0], dtype=int32)
     """
 
     def __init__(self, n_clusters=8, corr=0, init='notyet',
@@ -113,8 +98,6 @@ class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
             are assigned equal weight (default: None)
         """
 
-        # random_state = check_random_state(self.random_state)
-
         hc_ = \
             _pecok_clustering(
                 X, n_clusters=self.n_clusters, corr=self.corr, verbose=self.verbose)
@@ -126,28 +109,6 @@ class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
                 # return_n_iter=True)
         self.labels_ = hc_.labels_
         return self
-
-    # def predict(self, X, sample_weight=None):
-    #     """Predict the closest cluster each sample in X belongs to.
-    #     In the vector quantization literature, `cluster_centers_` is called
-    #     the code book and each value returned by `predict` is the index of
-    #     the closest code in the code book.
-    #     Parameters
-    #     ----------
-    #     X : {array-like, sparse matrix}, shape = [n_samples, n_features]
-    #         New data to predict.
-    #     sample_weight : array-like, shape (n_samples,), optional
-    #         The weights for each observation in X. If None, all observations
-    #         are assigned equal weight (default: None)
-    #     Returns
-    #     -------
-    #     labels : array, shape [n_samples,]
-    #         Index of the cluster each sample belongs to.
-    #     """
-    #     check_is_fitted(self, 'cluster_centers_')
-    #
-    #     X = self._check_test_data(X)
-    #     return self._labels_inertia_minibatch(X, sample_weight)[0]
 
 
 class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
@@ -176,28 +137,18 @@ class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
         ----------
         corrected_points_: array, [n_points, n_features]
             Points representation in Z-space
-        cluster_centers_ : array, [n_clusters, n_features]
-            Coordinates of cluster centers in Z-space
         labels_ :
             Labels of each point
-        inertia_ : float
-            Sum of squared distances (in Z-space) of samples to their closest cluster center.
 
         Examples
-            --------
-            TODO
-            >>> from sklearn.cluster import KMeans
-            >>> import numpy as np
-            >>> X = np.array([[1, 2], [1, 4], [1, 0],
-            ...               [4, 2], [4, 4], [4, 0]])
-            >>> kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-            >>> kmeans.labels_
-            array([0, 0, 0, 1, 1, 1], dtype=int32)
-            >>> kmeans.predict([[0, 0], [4, 4]])
-            array([0, 1], dtype=int32)
-            >>> kmeans.cluster_centers_
-            array([[1., 2.],
-                   [4., 2.]])
+        --------
+        >>> from pecok import KMeanz
+        >>> import numpy as np
+        >>> X = np.array([[1, 2], [1, 4], [1, 0],
+        ...               [4, 2], [4, 4], [4, 0]])
+        >>> kmeanz = KMeanz(n_clusters=2).fit(X)
+        >>> kmeanz.labels_
+        array([1, 1, 1, 0, 0, 0], dtype=int32)
     """
 
     def __init__(self, n_clusters=8, corr=0, init='notyet',
@@ -228,8 +179,6 @@ class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
             are assigned equal weight (default: None)
         """
 
-        # random_state = check_random_state(self.random_state)
-
         self.corrected_points_, hc_ = \
             _kmeanz(
                 X, n_clusters=self.n_clusters, corr=self.corr)
@@ -241,26 +190,3 @@ class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
                 # return_n_iter=True)
         self.labels_ = hc_.labels_
         return self
-
-    # def predict(self, X, sample_weight=None):
-    #     """Predict the closest cluster each sample in X belongs to.
-    #     In the vector quantization literature, `cluster_centers_` is called
-    #     the code book and each value returned by `predict` is the index of
-    #     the closest code in the code book.
-    #     Parameters
-    #     ----------
-    #     X : {array-like, sparse matrix}, shape = [n_samples, n_features]
-    #         New data to predict.
-    #     sample_weight : array-like, shape (n_samples,), optional
-    #         The weights for each observation in X. If None, all observations
-    #         are assigned equal weight (default: None)
-    #     Returns
-    #     -------
-    #     labels : array, shape [n_samples,]
-    #         Index of the cluster each sample belongs to.
-    #     """
-    #     check_is_fitted(self, 'cluster_centers_')
-    #
-    #     X = self._check_test_data(X)
-    #     return self._labels_inertia_minibatch(X, sample_weight)[0]
-

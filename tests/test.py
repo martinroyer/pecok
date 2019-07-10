@@ -3,22 +3,12 @@
 # author: Martin Royer <martin.royer@math.u-psud.fr>
 # License: MIT
 
-from functools import wraps
+from functools import partial
 import timeit
 
 import numpy as np
 from pecok import KMeanz, Pecok
-from sklearn.cluster import KMeans
-
-
-def _timethis(f):
-    @wraps(f)
-    def wrap(*args, **kw):
-        ts = timeit.default_timer()
-        result = f(*args, **kw)
-        te = timeit.default_timer()
-        return result, te-ts
-    return wrap
+from sklearn.cluster import KMeans, AgglomerativeClustering
 
 
 seed = 432
@@ -26,12 +16,10 @@ np.random.seed(seed)
 print("seed is %i" % seed)
 
 methods = [
-    [lambda X, K: KMeans(n_clusters=K, init='k-means++', n_init=100).fit(X).labels_, 'kmeans++'],
-    [lambda X, K: KMeanz(n_clusters=K, corr=2).fit(X).labels_, 'KMeanz'],
-    [lambda X, K: Pecok(n_clusters=K, corr=2).fit(X).labels_, 'Pecok'],
-#    [hdclassif, 'HDDC'],
-#     [pecok_clustering, 'pecok'],
-#     [kmeanz_clustering, 'kmeanz']
+    [partial(KMeans, init="k-means++", n_init=100), "k-means++"],
+    [partial(AgglomerativeClustering, linkage='ward'), "Hierarchical"],
+    [partial(KMeanz, corr=2), "KMeanz"],
+    [partial(Pecok, corr=2), "Pecok"],
 ]
 
 print("\nVAR CLUSTERING\n\n")
@@ -39,7 +27,7 @@ n_var = 10
 n_obs = 100
 
 truth = np.asmatrix(np.concatenate((np.repeat(0, n_var//2), np.repeat(1, n_var//2))))
-membership = truth.T.dot(np.matrix([1, 0])) + (1-truth).T.dot(np.matrix([0, 1]))
+membership = truth.T.dot(np.array([1, 0])[np.newaxis,:]) + (1-truth).T.dot(np.array([0, 1])[np.newaxis,:])
 stds = np.ones(n_var)
 stds[:(n_var//2)] = 0.1
 sigma = membership.dot(0.1*np.identity(2)).dot(membership.T) + np.diag(stds)
@@ -47,9 +35,11 @@ mat_data = np.random.multivariate_normal(mean=np.zeros(n_var), cov=sigma, size=n
 
 print("truth:".ljust(15), truth)
 for method, method_name in methods:
-    job_result, job_time = _timethis(method)(mat_data.T, 2)
+    ts = timeit.default_timer()
+    job_result = method(n_clusters=2).fit(mat_data.T).labels_
+    te = timeit.default_timer()
     print(method_name.ljust(15), job_result)
-    print("job_time: %.2f (s)".ljust(15) % job_time)
+    print("job_time: %.2f (s)".ljust(15) % (te-ts))
 
 
 print("\nPOINT CLUSTERING\n\n")
@@ -64,7 +54,8 @@ X[n_obs//2:, :] = -np.ones(n_var)*snr + np.random.normal(scale=0.1, size=(n_obs/
 
 print("truth:".ljust(15), truth)
 for method, method_name in methods:
-    job_result, job_time = _timethis(method)(X, 2)
+    ts = timeit.default_timer()
+    job_result = method(n_clusters=2).fit(X).labels_
+    te = timeit.default_timer()
     print(method_name.ljust(15), job_result)
-    print("job_time: %.2f (s)".ljust(15) % job_time)
-# print("pecok:".ljust(15), pecok_clustering(X, n_struct=2, rho=100, n_iter_max=3000, verbose=True).labels_)
+    print("job_time: %.2f (s)".ljust(15) % (te-ts))
