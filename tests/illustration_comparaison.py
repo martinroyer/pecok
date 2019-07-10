@@ -1,5 +1,3 @@
-print(__doc__)
-
 import time
 import warnings
 
@@ -10,8 +8,7 @@ from sklearn import cluster, datasets, mixture
 from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 
-from pecok import KMeanZ
-
+from pecok import KMeanz
 
 
 np.random.seed(0)
@@ -27,8 +24,8 @@ blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
 # aniso = (X_aniso, y)
 
 # blobs with varied variances
-varied = datasets.make_blobs(n_samples=n_samples, centers=np.matrix([[0,0],[1,0]]),
-                             cluster_std=[.1, .5],
+varied = datasets.make_blobs(n_samples=n_samples, centers=np.array([[0,0],[1,0]]),
+                             cluster_std=[.05, .5],
                              random_state=random_state)
 
 # ============
@@ -65,7 +62,7 @@ for i_dataset, (dataset, algo_params) in enumerate(datasets):
     spectral = cluster.SpectralClustering(
         n_clusters=params['n_clusters'], eigen_solver='arpack',
         affinity="nearest_neighbors")
-    kmeanz = KMeanZ(
+    kmeanz = KMeanz(
         n_clusters=params['n_clusters'], corr=2
     )
     gmm = mixture.GaussianMixture(
@@ -74,7 +71,7 @@ for i_dataset, (dataset, algo_params) in enumerate(datasets):
     clustering_algorithms = (
         ('MiniBatchKMeans', two_means),
         ('SpectralClustering', spectral),
-        ('KMeanZ', kmeanz)
+        ('KMeanz', kmeanz)
         # ('GaussianMixture', gmm)
     )
 
