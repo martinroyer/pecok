@@ -11,7 +11,7 @@ setup(
 	install_requires=[
           'numpy', 'scipy', 'scikit-learn'
       ],
-    version = '1.0.2',
+    version = '1.0.3',
     description = 'Implementation of Pecok',
     author='Martin Royer',
     author_email='martinpierreroyer@gmail.com',
