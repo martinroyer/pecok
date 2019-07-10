@@ -5,7 +5,7 @@
 
 # Description
 
-pecok is a python package containing a few clustering algorithms (unsupervised learning) for a given number of clusters. It is based on the PECOK paper (https://arxiv.org/abs/1606.05100)
+pecok is a python package containing a few clustering algorithms (unsupervised learning) for a given number of clusters. It is based on the PECOK paper https://arxiv.org/abs/1606.05100 for variable clustering that later got extended here: https://arxiv.org/abs/1508.01939 (to appear in Annals of Statistics). See also https://papers.nips.cc/paper/6776-adaptive-clustering-through-semidefinite-programming.
 
 # Installing pecok
 
@@ -35,15 +35,15 @@ X[:n//2, :] = np.ones(p) * snr + np.random.normal(scale=1, size=(n//2,p))
 
 from pecok import Pecok, KMeanz
 Pecok(n_clusters=2, corr=4).fit(X).labels_
-KMeans(n_clusters=2, corr=2).fit(X).labels_
+KMeanz(n_clusters=2, corr=2).fit(X).labels_
 ```
 
 
-### Clustering algorithms
+## Clustering algorithms
 
-Currently available algorithms are:
+Currently available algorithms (with sklearn object framework implementing `fit` routine) are:
 
-  * **pecok_clustering**: the main clustering algorithm described in [Bunea, Giraud, Royer, Verzelen ('17)]
+  * **Pecok**: the main clustering algorithm described in [Bunea, Giraud, Royer, Verzelen ('17)]
 
     Parameters:
 
@@ -56,7 +56,7 @@ Currently available algorithms are:
     |**n_iter_max** = -1| if positive, sets the stop condition for maximum number of iteration of the ADMM algorithm used to approximate the solution of the SDP.|
 	|**verbose** = False| yields print for time and residuals value at ADMM stop time.|
 
-  * **kmeanz_clustering**: efficient variant for main clustering algorithm, see my PhD thesis
+  * **KMeanz**: efficient variant for main clustering algorithm, introduced in my PhD thesis: http://www.theses.fr/2018SACLS442
 
     Parameters:
 
