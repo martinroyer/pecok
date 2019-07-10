@@ -1,6 +1,6 @@
 """PECOK clustering"""
 
-# author: Martin Royer <martin.royer@m4x.org>
+# author: Martin Royer <martin.royer@math.u-psud.fr>
 # License: MIT
 
 import numpy as np
@@ -21,14 +21,14 @@ def _corrected_relational(obs, corr):
     return (obs.dot(obs.T) - gamma_hat(obs, corr=corr)) / obs.shape[1]
 
 
-def kmeanz(X, n_clusters, corr):
+def _kmeanz(X, n_clusters, corr):
     gram_corrected = _corrected_relational(X, corr=corr)
     U, s, _ = lin_svd(gram_corrected, compute_uv=True)
     approx = U.dot(np.diag(np.sqrt(s)))
     return approx, AgglomerativeClustering(linkage='ward', n_clusters=n_clusters).fit(approx)
 
 
-def pecok_clustering(obs, n_clusters, corr=4, **kwargs):
+def _pecok_clustering(obs, n_clusters, corr=4, **kwargs):
     gram_corrected = _corrected_relational(obs, corr=corr)
     U, _, V = spa_svd(gram_corrected, k=n_clusters)
     Bhat = pecok_admm(gram_corrected, n_clusters=n_clusters, mat_init=U.dot(V), **kwargs)
@@ -37,7 +37,7 @@ def pecok_clustering(obs, n_clusters, corr=4, **kwargs):
 
 class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
     """PeCoK clustering
-        Read more in [my thesis]
+        Read more in [my thesis: http://www.theses.fr/2018SACLS442]
         Parameters
         ----------
         n_clusters : int, optional, default: 8
@@ -116,7 +116,7 @@ class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
         # random_state = check_random_state(self.random_state)
 
         hc_ = \
-            pecok_clustering(
+            _pecok_clustering(
                 X, n_clusters=self.n_clusters, corr=self.corr, verbose=self.verbose)
                 # init=self.init, n_init=self.n_init,
                 # max_iter=self.max_iter, verbose=self.verbose,
@@ -152,7 +152,7 @@ class Pecok(BaseEstimator, ClusterMixin, TransformerMixin):
 
 class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
     """K-MeanZ clustering
-        Read more in [my thesis]
+        Read more in [my thesis: http://www.theses.fr/2018SACLS442]
         Parameters
         ----------
         n_clusters : int, optional, default: 8
@@ -231,7 +231,7 @@ class KMeanz(BaseEstimator, ClusterMixin, TransformerMixin):
         # random_state = check_random_state(self.random_state)
 
         self.corrected_points_, hc_ = \
-            kmeanz(
+            _kmeanz(
                 X, n_clusters=self.n_clusters, corr=self.corr)
                 # init=self.init, n_init=self.n_init,
                 # max_iter=self.max_iter, verbose=self.verbose,

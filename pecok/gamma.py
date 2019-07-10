@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-def gamma_hat2(X):
+def _gamma_hat2(X):
     n_samples,_ = X.shape
     X2 = X / (np.linalg.norm(X, axis=1, keepdims=True)+1e-8)
     XaX2 = X.dot(X2.T)
@@ -21,7 +21,7 @@ def gamma_hat2(X):
     return gamma
 
 
-def gamma_hat2_robust(X):
+def _gamma_hat2_robust(X):
     n_samples,_ = X.shape
     X2 = X / (np.linalg.norm(X, axis=1, keepdims=True)+1e-8)
     XaX2 = X.dot(X2.T)
@@ -34,7 +34,7 @@ def gamma_hat2_robust(X):
     return gamma
 
 
-def gamma_hat3(X):
+def _gamma_hat3(X):
     """Gamma_hat3 estimator from PECOK supplement, in O(n_samples^3 * n_features)
 
     Parameters
@@ -53,7 +53,7 @@ def gamma_hat3(X):
     return gamma
 
 
-def gamma_hat4(X):
+def _gamma_hat4(X):
     """Gamma_hat4 estimator from PECOK, in O(n_samples^4 * n_features)
 
     Parameters
@@ -81,21 +81,21 @@ def gamma_hat4(X):
     return np.asarray(gamma)
 
 
-def no_correction(X):
+def _no_correction(X):
     return np.zeros(X.shape[0])
 
 
-def cross_diag(X):
+def _cross_diag(X):
     return np.diag(X.dot(X.T))
 
 
 def gamma_hat(X, corr):
     ghat = {
-        0: no_correction,
-        1: gamma_hat2_robust,
-        2: gamma_hat2,
-        3: gamma_hat3,
-        4: gamma_hat4,
-        8: cross_diag,
-    }.get(corr, no_correction)(X)
+        0: _no_correction,
+        1: _gamma_hat2_robust,
+        2: _gamma_hat2,
+        3: _gamma_hat3,
+        4: _gamma_hat4,
+        8: _cross_diag,
+    }.get(corr, _no_correction)(X)
     return np.diag(ghat)
